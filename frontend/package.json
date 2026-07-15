@@ -15,12 +15,5 @@
     "react-dom": "^19.0.0",
     "qrcode.react": "^4.2.0"
   },
-<<<<<<< HEAD
   "devDependencies": {}
-=======
-  "devDependencies": {},
-  "allowScripts": {
-    "esbuild@0.25.12": true
-  }
->>>>>>> 2b8c5a6712af6568d23d04039d0066da0f1b25d6
 }
