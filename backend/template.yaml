@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: QRFix - QR-based issue reporting MVP
+
+Globals:
+  Function:
+    Runtime: nodejs22.x
+    Architectures:
+      - arm64
+    MemorySize: 256
+    Timeout: 10
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref TicketsTable
+
+Resources:
+  QRFixApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: qrfix-api
+      StageName: Prod
+      Cors:
+        AllowMethods: "'GET,POST,PATCH,OPTIONS'"
+        AllowHeaders: "'Content-Type'"
+        AllowOrigin: "'*'"
+
+  TicketsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${AWS::StackName}-tickets'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: ticketId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: ticketId
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+
+  TicketFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-api'
+      CodeUri: src/
+      Handler: app.handler
+      Description: QRFix ticket API
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TicketsTable
+      Events:
+        Health:
+          Type: Api
+          Properties:
+            RestApiId: !Ref QRFixApi
+            Path: /health
+            Method: GET
+        ListTickets:
+          Type: Api
+          Properties:
+            RestApiId: !Ref QRFixApi
+            Path: /tickets
+            Method: GET
+        CreateTicket:
+          Type: Api
+          Properties:
+            RestApiId: !Ref QRFixApi
+            Path: /tickets
+            Method: POST
+        UpdateTicket:
+          Type: Api
+          Properties:
+            RestApiId: !Ref QRFixApi
+            Path: /tickets/{id}
+            Method: PATCH
+
+Outputs:
+  ApiUrl:
+    Description: API base URL
+    Value: !Sub 'https://${QRFixApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/Prod'
+  TableName:
+    Description: DynamoDB table name
+    Value: !Ref TicketsTable
