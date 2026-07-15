@@ -320,4 +320,3 @@ Deleting the backend stack makes the live frontend unable to create or load tick
 ## License
 
 This project is provided for portfolio and learning purposes. Review and adapt security, privacy, and commercial requirements before using it for a real customer.
-# qrfix-serverless
